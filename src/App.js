@@ -1,24 +1,25 @@
 import logo from './logo.svg';
 import './App.css';
+import { CssBaseline, ThemeProvider, useMediaQuery } from '@mui/material';
+import { useMemo } from 'react';
+import { theme } from './theme';
+import { CacheProvider } from '@emotion/react';
+import createEmotionCache from './createEmotionCache';
+import { Dashboard } from './Dashboard';
 
 function App() {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const customTheme = useMemo(() => theme(prefersDarkMode), [prefersDarkMode]);
+
+  const emotionCache = createEmotionCache();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <CacheProvider value={emotionCache}>
+      <ThemeProvider theme={customTheme}>
+        <CssBaseline />
+        <Dashboard />
+      </ThemeProvider>
+    </CacheProvider>
   );
 }
 
