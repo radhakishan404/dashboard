@@ -21,6 +21,7 @@ import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
+import { TextField } from '@mui/material';
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -53,6 +54,7 @@ function stableSort(array, comparator) {
 const headCells = [
     { id: 'id', label: 'Id' },
     { id: 'name', label: 'Name', minWidth: 150 },
+    { id: 'location', label: 'Location', minWidth: 150 },
     {
         id: 'age',
         label: 'Age',
@@ -128,29 +130,41 @@ EnhancedTableHead.propTypes = {
 };
 
 function EnhancedTableToolbar(props) {
-    const { numSelected } = props;
+    const { numSelected, handleSearch } = props;
 
     return (
-        <Toolbar
-            sx={{
-                pl: { sm: 2 },
-                pr: { xs: 1, sm: 1 },
-                ...(numSelected > 0 && {
-                    bgcolor: (theme) =>
-                        alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-                }),
-            }}
-        >
+        <React.Fragment>
             {numSelected > 0 ? (
-                <Typography
-                    sx={{ flex: '1 1 100%' }}
-                    color="inherit"
-                    variant="subtitle1"
-                    component="div"
+                <Toolbar
+                    sx={{
+                        pl: { sm: 2 },
+                        pr: { xs: 1, sm: 1 },
+                        ...(numSelected > 0 && {
+                            bgcolor: (theme) =>
+                                alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+                        }),
+                    }}
                 >
-                    {numSelected} selected
-                </Typography>
-            ) : (
+                    <Typography
+                        sx={{ flex: '1 1 100%' }}
+                        color="inherit"
+                        variant="subtitle1"
+                        component="div"
+                    >
+                        {numSelected} selected
+                    </Typography>
+                </Toolbar>
+            ) : null}
+            <Toolbar
+                sx={{
+                    pl: { sm: 2 },
+                    pr: { xs: 1, sm: 1 },
+                    ...(numSelected > 0 && {
+                        bgcolor: (theme) =>
+                            alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+                    }),
+                }}
+            >
                 <Typography
                     sx={{ flex: '1 1 100%' }}
                     variant="h6"
@@ -159,20 +173,20 @@ function EnhancedTableToolbar(props) {
                 >
                     Table Data
                 </Typography>
-            )}
-        </Toolbar>
+                <TextField id="outlined-search" label="Type here" type="text" onKeyUp={(e) => handleSearch(e.target.value)} />
+            </Toolbar>
+        </React.Fragment>
     );
 }
 
 EnhancedTableToolbar.propTypes = {
     numSelected: PropTypes.number.isRequired,
+    handleSearch: PropTypes.func.isRequired,
 };
 
-export default function DataTable({ data, selected, setSelected }) {
+export default function DataTable({ data, selected, setSelected, handleSearch, rowsPerPage, setRowsPerPage, page, setPage, datalength }) {
     const [order, setOrder] = React.useState('desc');
     const [orderBy, setOrderBy] = React.useState('no');
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -191,12 +205,11 @@ export default function DataTable({ data, selected, setSelected }) {
 
     const visibleRows = React.useMemo(
         () =>
-            stableSort(data, getComparator(order, orderBy)).slice(
-                page * rowsPerPage,
-                page * rowsPerPage + rowsPerPage,
-            ),
-        [order, orderBy, page, rowsPerPage],
+            stableSort(data, getComparator(order, orderBy)),
+        [order, orderBy, data],
     );
+
+    console.log(visibleRows, "visibleRows");
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
@@ -230,7 +243,7 @@ export default function DataTable({ data, selected, setSelected }) {
 
     return (
         <React.Fragment>
-            <EnhancedTableToolbar numSelected={selected.length} />
+            <EnhancedTableToolbar numSelected={selected.length} handleSearch={handleSearch} />
             <TableContainer>
                 <Table
                     sx={{ minWidth: 750 }}
@@ -289,7 +302,7 @@ export default function DataTable({ data, selected, setSelected }) {
             <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={data.length}
+                count={datalength}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}

@@ -22,8 +22,6 @@ export const DataBarChart = ({ selected, data }) => {
                 return true;
             });
 
-            console.log(studentNames, "name");
-
             const chartGenerate = [
                 {
                     x: studentNames,
